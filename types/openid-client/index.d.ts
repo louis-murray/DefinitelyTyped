@@ -119,61 +119,88 @@ export interface RevokeRequestOptions {
     readonly clientAssertionPayload?: object;
 }
 
-export class Client {
-    static [custom.http_options]: CustomHttpOptionsProvider;
-
-    constructor(metadata?: ClientMetadata);
-
-    [custom.http_options]: CustomHttpOptionsProvider;
-
-    readonly metadata: ClientMetadata;
-
-    authorizationUrl(parameters?: AuthorizationUrlParameters): string;
-
-    endSessionUrl(parameters?: EndSessionUrlParameters): string;
-
-    callbackParams(input: string | IncomingMessage): {};
-
-    callback(
-        redirectUri: string,
-        parameters: {},
-        checks?: {
-            readonly response_type?: string;
-            readonly state?: string;
-            readonly nonce?: string;
-            readonly code_verifier?: string;
-            readonly max_age?: number;
-        }
-    ): Promise<TokenSet>;
-
-    userinfo(accessToken: string | TokenSet): Promise<{ readonly [name: string]: {} | null | undefined }>;
-
-    grant(body: {
-        readonly grant_type: 'authorization_code' | 'client_credentials' | 'password' | 'refresh_token' | string;
-        readonly [name: string]: string | undefined;
-    }): Promise<TokenSet>;
-
-    introspect(
-        token: string,
-        tokenTypeHint?: string,
-        extras?: { readonly introspectBody?: object }
-    ): Promise<IntrospectionResponse>;
-
-    /**
-     * Revokes a token at the Authorization Server's `revocation_endpoint`.
-     *
-     * @param token Token to revoke
-     * @param tokenTypeHint Hint the Authorization Server as to the token type
-     * @param extras Additional revoke options
-     */
-    revoke(token: string, tokenTypeHint: string, extras?: RevokeRequestOptions): Promise<void>;
+export interface RefreshRequestOptions {
+  readonly exchangeBody?: { readonly [key: string]: string };
+  readonly clientAssertionPayload?: { readonly [key: string]: string };
 }
+
+export class Client {
+         static [custom.http_options]: CustomHttpOptionsProvider;
+
+         constructor(metadata?: ClientMetadata);
+
+         [custom.http_options]: CustomHttpOptionsProvider;
+
+         readonly metadata: ClientMetadata;
+
+         authorizationUrl(parameters?: AuthorizationUrlParameters): string;
+
+         endSessionUrl(parameters?: EndSessionUrlParameters): string;
+
+         callbackParams(input: string | IncomingMessage): {};
+
+         callback(
+           redirectUri: string,
+           parameters: {},
+           checks?: {
+             readonly response_type?: string;
+             readonly state?: string;
+             readonly nonce?: string;
+             readonly code_verifier?: string;
+             readonly max_age?: number;
+           },
+         ): Promise<TokenSet>;
+
+         userinfo(
+           accessToken: string | TokenSet,
+         ): Promise<{ readonly [name: string]: {} | null | undefined }>;
+
+         grant(body: {
+           readonly grant_type:
+             | 'authorization_code'
+             | 'client_credentials'
+             | 'password'
+             | 'refresh_token'
+             | string;
+           readonly [name: string]: string | undefined;
+         }): Promise<TokenSet>;
+
+         introspect(
+           token: string,
+           tokenTypeHint?: string,
+           extras?: { readonly introspectBody?: object },
+         ): Promise<IntrospectionResponse>;
+
+         /**
+          * Revokes a token at the Authorization Server's `revocation_endpoint`.
+          *
+          * @param token Token to revoke
+          * @param tokenTypeHint Hint the Authorization Server as to the token type
+          * @param extras Additional revoke options
+          */
+         revoke(
+           token: string,
+           tokenTypeHint: string,
+           extras?: RevokeRequestOptions,
+         ): Promise<void>;
+
+         /**
+          * Refresh your active token
+          * @param refreshToken The refresh token
+          * @param opts Additional options
+          */
+         refresh(
+           refreshToken: string,
+           opts?: RefreshRequestOptions,
+         ): Promise<TokenSet>;
+       }
 
 export class TokenSet {
     readonly access_token?: string;
     readonly token_type?: string;
     readonly id_token?: string;
     readonly refresh_token?: string;
+    readonly expiration?: number;
 
     expired(): boolean;
 
